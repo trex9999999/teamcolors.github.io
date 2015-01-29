@@ -1,0 +1,36 @@
+<ul id="content" class="teams">
+    {{#each leagues}}
+        <li>
+            <h2 id="{{toLowerCase @key}}">
+                {{@key}}
+            </h2>
+            <ul>
+                {{#each this}}
+                    <li class="team" 
+                        id="{{toLowerCase @key}}" 
+                        data-team-id="{{toLowerCase @key}}" 
+                        data-league="">
+                        
+                        <h3 
+                            id="{{toLowerCase @key}}" 
+                            class="team__name" 
+                            data-logo-url="img/build/<?= strtolower($league) . '/' . $teamID ?>.svg">
+                            {{@key}}
+                        </h3>
+
+                        <ul class="colors">
+                            {{#each this}}
+                                <li 
+                                    class="color" 
+                                    data-hex="#{{this}}" 
+                                    data-rgb="{{hex2rgb this}}">
+                                    {{this}}
+                                </li>
+                            {{/each}}
+                        </ul>
+                    </li>
+                {{/each}}
+            </ul>
+        </li>
+    {{/each}}
+</ul>
