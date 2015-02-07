@@ -1,15 +1,15 @@
 var gulp                   = require('gulp'); 
 var gutil                  = require('gulp-util');
-//var jshint               = require('gulp-jshint');
+var del                    = require('del');
+var jshint                 = require('gulp-jshint');
 var sass                   = require('gulp-sass');
-//var concat               = require('gulp-concat');
-//var uglify               = require('gulp-uglify');
+var concat                 = require('gulp-concat');
+var uglify                 = require('gulp-uglify');
 var rename                 = require('gulp-rename');
 var autoprefixer           = require('gulp-autoprefixer') ;
 var path                   = require('path');
 var notify                 = require('gulp-notify');
 var plumber                = require('gulp-plumber');
-//var del                  = require('del');
 var Handlebars             = require('handlebars');
 var handlebarsCompile      = require('gulp-compile-handlebars');
 
@@ -27,25 +27,20 @@ function handleError() {
   });
 }
 
-// Clean
-// gulp.task('clean', function(cb) {
-//     del([path.join(OUTPUT), '**/*'], cb)
-// });
+// Lint 
+gulp.task('lint', function() {
+    return gulp
+        .src(path.join(INPUT, 'scripts/*.js'))
+        .pipe(jshint())
+        .pipe(jshint.reporter('default'));
+});
 
-// Lint Task
-// gulp.task('lint', function() {
-//     return gulp
-//         .src(path.join(INPUT, 'scripts/*.js'))
-//         .pipe(jshint())
-//         .pipe(jshint.reporter('default'));
-// });
-
-// Compile Our Sass
+// Sass
 gulp.task('sass', function() {
     return gulp
         .src(path.join(INPUT, 'styles/*.scss'))
         .pipe(handleError())
-        .pipe(sass())
+        .pipe(sass({ outputStyle: 'compressed' }))
         .pipe(autoprefixer({
             browsers: ['last 2 versions'],
             cascade: false
@@ -54,33 +49,14 @@ gulp.task('sass', function() {
 });
 
 // Concatenate & Minify JS
-// gulp.task('scripts', function() {
-//     return gulp.src('js/*.js')
-//         .pipe(concat('all.js'))
-//         .pipe(gulp.dest('dist'))
-//         .pipe(rename('all.min.js'))
-//         .pipe(uglify())
-//         .pipe(gulp.dest('dist'));
-// });
-
-// gulp.task('handlebars', function(){
-//     var source = "<p>Hello, my name is {{name}}. I am from {{hometown}}. I have " +
-//              "{{kids.length}} kids:</p>" +
-//              "<ul>{{#kids}}<li>{{name}} is {{age}}</li>{{/kids}}</ul>";
-//     //var source = require('../src/html/tmpl.hb');
-//     var template = handlebars.compile(source);
-     
-//     var data = { "name": "Alan", "hometown": "Somewhere, TX",
-//                  "kids": [{"name": "Jimmy", "age": "12"}, {"name": "Sally", "age": "4"}]};
-//     var result = template(data);
-//     console.log(result);
-//     return gulp
-//       .src(path.join(INPUT, 'html/tmpl.hb'))
-//       .pipe()
-//       .pipe(gulp.dest(path.join(OUTPUT, 'html')));
-// });
-
-
+gulp.task('compile-js', function() {
+    return gulp
+        .src(path.join(INPUT, 'scripts/**'))
+        .pipe(concat('main.js'))
+        .pipe(rename('main.min.js'))
+        .pipe(uglify())
+        .pipe(gulp.dest(path.join(OUTPUT, 'scripts')));
+});
 
 // Handlebars
 gulp.task('handlebars', function(){
@@ -88,20 +64,39 @@ gulp.task('handlebars', function(){
     return gulp
         .src(path.join(INPUT, 'html/tmpl.hbs'))
         .pipe(handlebarsCompile(templateData))
-        //.pipe(rename('hello.html'))
-        .pipe(gulp.dest(path.join(OUTPUT, 'html')));
+        .pipe(rename('index.html'))
+        .pipe(gulp.dest(path.join(OUTPUT)));
 });
 
 // Watch Files For Changes
 gulp.task('watch', function() {
     gulp.watch(path.join(INPUT, 'styles/*.scss'), ['sass']);
     gulp.watch(path.join(INPUT, 'html/*.hb'), ['handlebars']);
+    gulp.watch(path.join(INPUT, 'scripts/*.js'), ['lint', 'compile-js']);
+});
+
+// Clean
+gulp.task('clean', function (cb) {
+  del([
+    path.join(OUTPUT, '**'),
+    path.join(OUTPUT, 'styles/*.*')
+  ], cb);
 });
 
 // Default Task
-gulp.task('default', ['sass','watch', 'handlebars']);
+gulp.task('default', ['clean'], function(){
+    gulp.start(
+        'sass',
+        'handlebars', 
+        'lint', 
+        'compile-js',
+        'watch'
+    );
+});
 
-
+/*
+ * Handlebars Helpers
+ */
 // Handlebars helpers
 Handlebars.registerHelper('toLowerCase', function(str) {
   return str.toLowerCase();

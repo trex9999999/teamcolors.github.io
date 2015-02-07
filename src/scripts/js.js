@@ -1,4 +1,3 @@
-
 var TeamColors = {
 
     // Set the defaults
@@ -86,7 +85,7 @@ $(document).ready(function(){
 
         // If the search field is not empty (user has a filtered selection)
         // Reset the search field
-        if( $('.search').val() != '' ) {
+        if( $('.search').val() !== '' ) {
             $('.search').val('');  
             TeamColors.search = '';
 
@@ -122,7 +121,7 @@ $(document).ready(function(){
         }).each(function(){
             var name = $(this).attr('data-team-id').toLowerCase();
             
-            if(TeamColors.search.length == 0) {
+            if(TeamColors.search.length === 0) {
                 $(this).show();
                 $(this).find('.team__name').html($(this).attr('data-team-id'));
             }
@@ -151,7 +150,7 @@ $(document).ready(function(){
     // http://stackoverflow.com/questions/6139107/programatically-select-text-in-a-contenteditable-html-element
     $('.color').on('click', function(){
         var el = $(this).find('.color__' + TeamColors.activeColorMode);
-        el = el['context'];
+        el = el.context;
 
         var range = document.createRange();
         range.selectNodeContents(el);
